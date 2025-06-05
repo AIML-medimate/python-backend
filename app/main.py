@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from app import database as db
 from app.routes import patient_route
 from app import models #imported just to register the tables
+from app.middleware import add_global_exception_handlers
 
 @asynccontextmanager
 async def lifespan(app:FastAPI):
@@ -11,6 +12,8 @@ async def lifespan(app:FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
+
+add_global_exception_handlers(app)
 
 @app.get("/")
 def root_route():

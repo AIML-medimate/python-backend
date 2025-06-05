@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession 
 
-from database import get_db
+from app import get_db
 from app.services import get_all_patients,create_new_patient
-from schemas import PatientCreate
+from app.schemas import PatientCreate
 router = APIRouter(tags=["Patient"])
 
 @router.get("/")

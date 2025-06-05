@@ -1,8 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from models import Patient
-from schemas import PatientCreate
+
+from app.models import Patient
+from app.utils import hash_password,verify_password, model_to_dict
+from app.schemas import PatientCreate
+from app.core import success_response
+from app.core import AppException, NotFoundException
 
 
 async def get_all_patients(db:AsyncSession):
@@ -11,7 +15,7 @@ async def get_all_patients(db:AsyncSession):
     """
     result = await db.execute(select(Patient))
     allPatients = result.scalars().all()
-    return allPatients
+    return success_response(allPatients)
 
 async def create_new_patient(patient: PatientCreate,db:AsyncSession):
     """
@@ -24,11 +28,10 @@ async def create_new_patient(patient: PatientCreate,db:AsyncSession):
     Raises:
         SQLAlchemyError: If there is an error during the database transaction.
     """
-    try:
-        new_patient = Patient(name=patient.name,email=patient.email,date_of_birth=patient.date_of_birth)
-        db.add(new_patient)
-        await db.commit()
-        await db.refresh(new_patient)
-        return new_patient
-    except Exception as e:
-        return {"msg":"error while creating Patient","error":e}
+    patient.password = hash_password(patient.password)
+    new_patient = Patient(name=patient.name,email=patient.email,date_of_birth=patient.date_of_birth,password=patient.password)
+    db.add(new_patient)
+    await db.commit()
+    await db.refresh(new_patient)
+    patient_data = model_to_dict(new_patient, exclude=["password"])
+    return success_response(patient_data,status_code=201,message="Patient created successfully")
