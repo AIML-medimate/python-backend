@@ -1,1 +1,3 @@
 from .patient_service import get_all_patients,create_new_patient
+from .blood_report_service import get_all_blood_reports, add_blood_tests
+from .doctor_service import get_all_doctors,create_new_doctor

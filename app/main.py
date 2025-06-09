@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app import database as db
-from app.routes import patient_route
+from app.routes import patient_route, doctor_route
 from app import models #imported just to register the tables
 from app.middleware import add_global_exception_handlers
 
@@ -20,3 +20,4 @@ def root_route():
     return {"message":"Hello, World!"}
 
 app.include_router(patient_route.router,prefix="/patients")
+app.include_router(doctor_route.router,prefix="/doctors")

@@ -1,10 +1,11 @@
+from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 
 from app.models import Patient
 from app.utils import hash_password,verify_password, model_to_dict
-from app.schemas import PatientCreate
+from app.schemas import PatientCreate,BloodReportCreate
 from app.core import success_response
 from app.core import AppException, NotFoundException
 
@@ -29,6 +30,7 @@ async def create_new_patient(patient: PatientCreate,db:AsyncSession):
         SQLAlchemyError: If there is an error during the database transaction.
     """
     patient.password = hash_password(patient.password)
+    
     new_patient = Patient(name=patient.name,email=patient.email,date_of_birth=patient.date_of_birth,password=patient.password)
     db.add(new_patient)
     await db.commit()
