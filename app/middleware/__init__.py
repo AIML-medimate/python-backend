@@ -1,1 +1,2 @@
 from .error_handler import add_global_exception_handlers
+from .file_upload_handler import FileHandlingMiddleware

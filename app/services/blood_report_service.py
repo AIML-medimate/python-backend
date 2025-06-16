@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 
-from app.models import BloodReport, Patient
+from app.models import BloodReport, Patient, Doctor
 from app.utils import model_to_dict
 from app.schemas import BloodReportCreate
 from app.core import success_response
@@ -19,31 +19,36 @@ async def get_all_blood_reports(patient_id:UUID,db: AsyncSession):
     serialized_reports = [model_to_dict(report) for report in allBloodReports]
     return success_response(serialized_reports,message="Blood reports retrieved successfully")
 
-async def add_blood_tests(patient_id: UUID, blood_tests: BloodReportCreate, db: AsyncSession):
+async def add_blood_tests(doctor_id: UUID, blood_test: BloodReportCreate, db: AsyncSession):
     """
-    Adds new blood tests for a specific patient.
+    Adds new blood tests for a specific doctor.
 
     Args:
-        patient_id (UUID): The ID of the patient whose blood tests are to be added.
-        blood_tests (BloodReportCreate): The blood test results to be added.
+        doctor_id (UUID): The ID of the doctor who is adding blood tests.
+        blood_test (BloodReportCreate): The blood test results to be added.
         db (AsyncSession): The asynchronous database session used for committing the updates.
     
     Returns:
         message (dict): A success response containing a message indicating the blood tests were added successfully.
     
     Raises:
-        NotFoundException: If the patient with the given ID does not exist.
+        NotFoundException: If the doctor with the given ID does not exist.
     """
-    result = await db.execute(select(Patient).where(Patient.id == patient_id))
+    result = await db.execute(select(Doctor).where(Doctor.id == doctor_id))
+    doctor = result.scalar_one_or_none()
+    result = await db.execute(select(Patient).where(Patient.id == blood_test.patient_id))
     patient = result.scalar_one_or_none()
-    
+
     if not patient:
-        raise NotFoundException(f"Patient with id {patient_id} not found")
-    
+        raise NotFoundException(f"Patient with id {blood_test.patient_id} not found")
+
+    if not doctor:
+        raise NotFoundException(f"Doctor with id {doctor_id} not found")
+
     new_report = BloodReport(
         patient_id=patient.id,
-        observed_date=blood_tests.observed_date,
-        result=blood_tests.result
+        observed_date=blood_test.observed_date,
+        result=blood_test.result
     )
     db.add(new_report)
     await db.commit()
